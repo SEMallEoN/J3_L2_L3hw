@@ -1,13 +1,13 @@
-package J3_L2_hw_semenov.service;
+package J3_L2_L3_hw_semenov.service;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientService extends JFrame {
     JTextArea jta = new JTextArea();
@@ -75,7 +75,7 @@ public class ClientService extends JFrame {
                 e.printStackTrace();
             }
         }
-        jta.append("\n" + jtf.getText());
+        jta.append("\n");
         jtf.setText("");
     }
 
@@ -96,16 +96,20 @@ public class ClientService extends JFrame {
                         jta.append(strMsg + "\n");
                         if (strMsg.startsWith("/authOk")) {
                             setAuthorized(true);
-                            myNick = strMsg.split("\\s")[1];
+//                            loadHistory();
+                        } else {
+                            jta.append(strMsg + "\n");
                             break;
                         }
                     }
+
                     while (true) {
                         String strMsg = dis.readUTF();
                         if (strMsg.equals("/exit")) {
                             break;
                         }
-                        jta.append(strMsg + "\n");
+                        jta.append(strMsg);
+                        saveHistory();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -127,7 +131,45 @@ public class ClientService extends JFrame {
         }
     }
 
+    private void saveHistory() throws IOException {
+        try {
+            File history = new File("C:/Java/GeekBrains/Java3/J3_L2_L3hw/src/main/java/J3_L2_L3_hw_semenov/history.txt");
+            PrintWriter fileWriter = new PrintWriter(new FileWriter(history, false));
+
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(jta.getText());
+            bufferedWriter.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadHistory() throws IOException {
+        int posHistory = 100;
+        File history = new File("C:/Java/GeekBrains/Java3/J3_L2_L3hw/src/main/java/J3_L2_L3_hw_semenov/history.txt");
+        List<String> historyList = new ArrayList<>();
+        FileInputStream in = new FileInputStream(history);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+
+        String temp;
+        while ((temp = bufferedReader.readLine()) != null) {
+            historyList.add(temp);
+        }
+
+        if (historyList.size() > posHistory) {
+            for (int i = historyList.size() - posHistory; i <= (historyList.size() - 1); i++) {
+                jta.append("(history) " + historyList.get(i) + "\n");
+            }
+        } else {
+            for (int i = 0; i < posHistory; i++) {
+                jta.append("(history) " + historyList.get(i) + "\n");
+            }
+        }
+    }
+
     public void setAuthorized(boolean b) {
+
 
     }
 }

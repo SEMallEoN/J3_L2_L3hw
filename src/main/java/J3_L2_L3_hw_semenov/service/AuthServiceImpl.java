@@ -1,6 +1,6 @@
-package J3_L2_hw_semenov.service;
+package J3_L2_L3_hw_semenov.service;
 
-import J3_L2_hw_semenov.inter.AuthService;
+import J3_L2_L3_hw_semenov.inter.AuthService;
 
 import java.util.List;
 
@@ -17,15 +17,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void start() {
-
+        System.out.println("Сервис аутентификации запущен");
     }
 
     @Override
-    public String getNick(String login, String password) {
+    public UserEntity getUser(String login, String password) {
         DBServiceImpl dbService = new DBServiceImpl();
-
-        return "Mike";
+        UserEntity user = dbService.findUser(login);
+        if ((user.getName().equals(login)) & (user.getPassword().equals(password))) {
+            return user;
+        } else {
+            return null;
+        }
     }
+
 
     @Override
     public void stop() {

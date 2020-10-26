@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="J3_L2_hw" />
+        <module name="J3_L2_L3hw" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,31 +1,33 @@
-package J3_L2_hw_semenov.handler;
+package J3_L2_L3_hw_semenov.handler;
 
-import J3_L2_hw_semenov.inter.AuthService;
-import J3_L2_hw_semenov.inter.DBService;
-import J3_L2_hw_semenov.service.DBServiceImpl;
-import J3_L2_hw_semenov.service.ServerImpl;
-import J3_L2_hw_semenov.service.UserEntity;
+import J3_L2_L3_hw_semenov.inter.DBService;
+import J3_L2_L3_hw_semenov.inter.Server;
+import J3_L2_L3_hw_semenov.service.DBServiceImpl;
+import J3_L2_L3_hw_semenov.service.UserEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class ClientHandler {
-    private ServerImpl server;
+    private Server server;
     private Socket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
-    private String nick;
+    private UserEntity user;
 
-    public ClientHandler(ServerImpl server, Socket socket) {
+    public String getNick(){
+        return user.getName();
+    }
+
+    public ClientHandler(Server server, Socket socket) {
         try {
             this.server = server;
             this.socket = socket;
             this.dis = new DataInputStream(socket.getInputStream());
             this.dos = new DataOutputStream(socket.getOutputStream());
-            this.nick = "";
+            this.user = user;
             new Thread(() -> {
                 try {
                     long a = System.currentTimeMillis();
@@ -52,21 +54,20 @@ public class ClientHandler {
             String str = dis.readUTF();
             if (str.startsWith("/auth")) {
                 String[] dataArray = str.split("\\s");
-                System.out.println(dataArray.toString());
-                String nick = server.getAuthService().getNick(dataArray[1], dataArray[2]);
-                if (nick != null) {
-                    if (!server.isNickBusy(nick)) {
-                        sendMsg("/authOk " + nick);
-                        this.nick = nick;
-                        server.broadcastMsg(this.nick + " Join to chat");
+                user = server.getAuthService().getUser(dataArray[1], dataArray[2]);
+                if (user != null) {
+                    if (!server.isNickBusy(user.getName())) {
+                        sendMsg("/authOk " + user.getName());
+                        this.user = user;
+                        server.broadcastMsg(this.user + " Join to chat");
                         server.subcribe(this);
                         return true;
                     } else {
-                        sendMsg("You are logged in");
+                        server.broadcastMsg("You are logged in");
                         return false;
                     }
                 } else {
-                    sendMsg("Incorrect password or login");
+                    server.broadcastMsg("Incorrect password or login");
                     return false;
                 }
             }
@@ -92,23 +93,25 @@ public class ClientHandler {
                     String[] strArray = clientStr.split("\\s");
                     String nickName = strArray[1];
                     String msg = clientStr.substring(4 + nickName.length());
+                    server.sndMsgToClient(this, nickName, msg);
                 }
                 if (clientStr.startsWith("/changeNickTo")){
-                    String[] strArray1 = clientStr.split("\\s");
-                    String newNick = strArray1[1];
-                    dos.writeUTF("/nickOk " + newNick);
-                    server.broadcastClientList();
+                    String[] strArray = clientStr.split("\\s");
+                    String oldNick = user.getName();
+                    DBService dbService = new DBServiceImpl();
+                    dbService.updateUserName(user, strArray[1]);
+                    server.broadcastMsg(oldNick + " Change Nick To " + user.getName());
                 }
                 continue;
             }
-            server.broadcastMsg(this.nick + ": " + clientStr);
+            sendMsg(user.getName() + ": " + clientStr);
         }
     }
 
 
     private void closeConnection() {
         server.unsubcribe(this);
-        server.broadcastMsg(this.nick + ": out from chat");
+        server.broadcastMsg(user.getName() + ": out from chat");
 
         try {
             dis.close();

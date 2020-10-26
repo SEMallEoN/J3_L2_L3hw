@@ -1,7 +1,7 @@
-package J3_L2_hw_semenov.inter;
+package J3_L2_L3_hw_semenov.inter;
 
-import J3_L2_hw_semenov.handler.ClientHandler;
-import J3_L2_hw_semenov.service.AuthServiceImpl;
+import J3_L2_L3_hw_semenov.handler.ClientHandler;
+import J3_L2_L3_hw_semenov.service.AuthServiceImpl;
 
 public interface Server {
     int PORT = 8189;

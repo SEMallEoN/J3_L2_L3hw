@@ -1,11 +1,11 @@
-package J3_L2_hw_semenov.service;
+package J3_L2_L3_hw_semenov.service;
 
 public class UserEntity {
     private int id;
     private String name;
     private String password;
 
-    public UserEntity(){
+    public UserEntity() {
 
     }
 

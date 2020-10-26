@@ -1,8 +1,7 @@
-package J3_L2_hw_semenov.service;
+package J3_L2_L3_hw_semenov.service;
 
-import J3_L2_hw_semenov.handler.ClientHandler;
-import J3_L2_hw_semenov.inter.AuthService;
-import J3_L2_hw_semenov.inter.Server;
+import J3_L2_L3_hw_semenov.handler.ClientHandler;
+import J3_L2_L3_hw_semenov.inter.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -39,32 +38,48 @@ public class ServerImpl implements Server {
 
     @Override
     public boolean isNickBusy(String Nick) {
+        for (ClientHandler c : clients) {
+            if (c.getNick()!=null && (c.getNick().equals(Nick))) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public void broadcastClientList() {
-
+        StringBuilder builder = new StringBuilder();
+        for (ClientHandler c:clients) {
+            builder.append(c.getNick() + " ");
+        }
+        broadcastMsg(builder.toString());
     }
 
     @Override
     public void broadcastMsg(String msg) {
-
+        for (ClientHandler c : clients) {
+            c.sendMsg(msg);
+        }
     }
 
     @Override
     public void subcribe(ClientHandler client) {
-
+        clients.add(client);
     }
 
     @Override
     public void unsubcribe(ClientHandler client) {
-
+        clients.remove(client);
     }
 
     @Override
     public void sndMsgToClient(ClientHandler from, String to, String msg) {
-
+        for (ClientHandler c : clients) {
+            if (c.getNick().equals(to)) {
+                c.sendMsg("from " + from.getNick()+ ":" + msg);
+                from.sendMsg("client " + to + ": " + msg);
+            }
+        }
     }
 
     @Override

@@ -1,53 +1,20 @@
-package J3_L2_hw_semenov.service;
+package J3_L2_L3_hw_semenov.service;
 
-import J3_L2_hw_semenov.inter.DBService;
+import J3_L2_L3_hw_semenov.inter.DBService;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 public class DBServiceImpl implements DBService {
 
     public static Connection getInstance() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection("jdbc:mysql://localhost:3306/geekbrains_1", "root", "root");
+            return DriverManager.getConnection("jdbc:mysql://localhost/geekbrains_1?useUnicode=true&serverTimezone=UTC&useSSL=false", "root", "root");
         } catch (Exception e) {
             e.printStackTrace();
 
-        } return null;
-    }
-    @Override
-    public ArrayList<UserEntity> findAll() {
-
-        ArrayList<UserEntity> users = new ArrayList<UserEntity>();
-        Connection connection = null;
-
-        try {
-            connection = getInstance();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
-
-            while (resultSet.next()) {
-                UserEntity user = new UserEntity(
-                        resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("password")
-                );
-                users.add(user);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("SWW during DB-query");
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
-            }
         }
-        return users;
+        return null;
     }
 
     @Override
@@ -59,7 +26,7 @@ public class DBServiceImpl implements DBService {
         try {
             connection = getInstance();
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM users WHERE name = " + login);
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM users WHERE name = \"" + login + "\"");
             resultSet.next();
 
             user.setId(resultSet.getInt("id"));
@@ -105,14 +72,18 @@ public class DBServiceImpl implements DBService {
     }
 
     @Override
-    public boolean updateUserName(String login, String newNick) {
+    public void updateUserName(UserEntity user, String newName) {
         Connection connection = null;
         try {
             connection = getInstance();
-            PreparedStatement statement = connection.prepareStatement("UPDATE users set nickname=" + newNick + "WHERE nickname =" + login);
-            return statement.execute();
+            PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE users SET name = ? WHERE id = ?");
+            statement.setString(1, newName);
+            statement.setInt(2, user.getId());
+            statement.execute();
+            user.setName(newName);
         } catch (SQLException e) {
-            throw new RuntimeException("SWW Обновление ника");
+            throw new RuntimeException("SWW during update nick");
         } finally {
             if (connection != null) {
                 try {
